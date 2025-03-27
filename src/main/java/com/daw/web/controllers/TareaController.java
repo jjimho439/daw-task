@@ -16,10 +16,10 @@ public class TareaController {
 
 	@Autowired
 	private TareaService tareaService;
-	
+
 	@GetMapping
-	public List<Tarea> list(){
+	public List<Tarea> list() {
 		return this.tareaService.findAll();
 	}
-	
+
 }
