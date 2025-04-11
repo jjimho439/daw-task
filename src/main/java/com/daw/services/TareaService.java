@@ -49,10 +49,11 @@ public class TareaService {
 	}
 
 	public Tarea create(Tarea tarea) {
-
 		tarea.setFechaCreacion(LocalDate.now());
 		tarea.setEstado(Estado.PENDIENTE);
-
+		if (tarea.getFechaVencimiento().isBefore(tarea.getFechaCreacion())) {
+			throw new TareaException("La fecha de Vencimiento debe ser posterior a la de hoy");
+		}
 		return this.tareaRepository.save(tarea);
 	}
 
@@ -69,6 +70,9 @@ public class TareaService {
 		}
 		if (tarea.getEstado() != null) {
 			throw new TareaException("No se permite modificar el Estado");
+		}
+		if (tarea.getFechaVencimiento().isBefore(tarea.getFechaCreacion())) {
+			throw new TareaException("La fecha de Vencimiento debe ser posterior a la de hoy");
 		}
 
 		Tarea tareaBD = this.findById(tarea.getId());
@@ -154,4 +158,55 @@ public class TareaService {
 	public List<Tarea> tareasOrdenadasFechaVencimiento() {
 		return this.tareaRepository.findAllByOrderByFechaVencimiento();
 	}
+
+	// Iniciar una tarea (solo se pueden iniciar tareas PENDIENTES)
+	public Tarea iniciarTarea(int idTarea) {
+		Tarea tarea = this.findById(idTarea);
+		if (this.tareaRepository.findById(idTarea).get().getEstado() != Estado.PENDIENTE) {
+			throw new TareaException("La tarea tiene que estar en estado PENDIENTE");
+		}
+		tarea.setEstado(Estado.EN_PROGRESO);
+		return this.tareaRepository.save(tarea);
+	}
+
+	// Completar una tarea (solo se pueden completar tareas EN_PROGRESO)
+	public Tarea completarTarea(int idTarea) {
+		Tarea tarea = this.findById(idTarea);
+		if (this.tareaRepository.findById(idTarea).get().getEstado() != Estado.EN_PROGRESO) {
+			throw new TareaException("La tarea tiene que estar en estado PENDIENTE");
+		}
+		tarea.setEstado(Estado.COMPLETADA);
+		return this.tareaRepository.save(tarea);
+	}
+
+	// Obtener las tareas pendientes
+	public List<Tarea> obtenerTareasPendientes() {
+		return this.tareaRepository.findByEstado(Estado.PENDIENTE);
+	}
+
+	// Obtener las tareas en progreso
+	public List<Tarea> obtenerTareasEnProgreso() {
+		return this.tareaRepository.findByEstado(Estado.EN_PROGRESO);
+	}
+
+	// Obtener las tareas completadas
+	public List<Tarea> obtenerTareasCompletadas() {
+		return this.tareaRepository.findByEstado(Estado.COMPLETADA);
+	}
+
+	// Obtener las tareas vencidas (fecha de vencimiento menos que la de hoy)
+	public List<Tarea> obtenerTareasVencidas() {
+		return this.tareaRepository.findByFechaVencimientoBefore(LocalDate.now());
+	}
+
+	// Obtener las tareas no vencidas (fecha de vencimiento mayor que la de hoy)
+	public List<Tarea> obtenerTareasNoVencidas() {
+		return this.tareaRepository.findByFechaVencimientoAfter(LocalDate.now());
+	}
+
+	// Obtener tareas mediante su título (que contenga el String que se pasa como título)
+	public List<Tarea> obtenerTareasTitulo(String titulo) {
+		return this.tareaRepository.findByTituloContainingIgnoreCase(titulo);
+	}
+
 }

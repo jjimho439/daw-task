@@ -73,5 +73,24 @@ public class TareaController {
 			return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
 		}
 	}
+	@PutMapping("/{idTarea}/iniciar")
+	public ResponseEntity<?> iniciar(@PathVariable int idTarea){
+		try {
+			return ResponseEntity.ok(this.tareaService.iniciarTarea(idTarea));
+		}
+		catch(TareaException ex){
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+		}
+	}
+	@PutMapping("/{idTarea}/completar")
+	public ResponseEntity<?> completar(@PathVariable int idTarea){
+		try {
+			return ResponseEntity.ok(this.tareaService.completarTarea(idTarea));
+		}
+		catch(TareaException ex) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+		}
+	}
+	
 
 }
